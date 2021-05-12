@@ -6,6 +6,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.stickyheader.Bug
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BugDao {
@@ -16,7 +17,9 @@ interface BugDao {
     fun deleteBugs(bug: Bug)
 
     @Query("SELECT * FROM Bug")
-    fun getBugDataSource() : DataSource.Factory<Int,Bug>
+    fun getBugs() : Flow<List<Bug>>
+
+
 
     @Query("DELETE FROM Bug")
     fun deleteAllBugs()

@@ -1,28 +1,31 @@
 package com.example.stickyheader
 
-import androidx.appcompat.app.AppCompatActivity
+import android.app.Dialog
 import android.os.Bundle
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.toLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.stickyheader.databinding.ActivityMainBinding
-import com.example.stickyheader.room.AppDatabase
-import com.example.stickyheader.room.BugDao
+import com.example.stickyheader.databinding.SortDialogBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
-    lateinit var binding : ActivityMainBinding
-    lateinit var bugAdapter : BugPagedListAdapter
-    lateinit var dao : BugDao
+    lateinit var binding: ActivityMainBinding
+    lateinit var bugAdapter: BugListAdapter
+    var currentOrder = Util.GROUP_BY_PROJECT
+
+    lateinit var viewModel: AppViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        dao = AppDatabase.getRoomDb(applicationContext).getBugDao()
+
+        viewModel = AppViewModel(applicationContext)
 
         binding.insertBugs.setOnClickListener {
             addBugs()
@@ -36,32 +39,49 @@ class MainActivity : AppCompatActivity() {
             checkStatus()
         }
 
+        binding.changeGroupBy.setOnClickListener {
+            showChangeGroupDialog()
+        }
 
-         bugAdapter = BugPagedListAdapter()
+
+        bugAdapter = BugListAdapter()
 
         binding.bugRecyclerView.apply {
             adapter = bugAdapter
             layoutManager = LinearLayoutManager(applicationContext)
-            addItemDecoration(RecyclerViewItemDecoration(applicationContext, 100 , true, object : SectionCallBack{
-                override fun isSectionHeader(position: Int): Boolean {
-                    if(position%10==0)return true
-                    return false
-                }
+            addItemDecoration(
+                RecyclerViewItemDecoration(
+                    applicationContext,
+                    100,
+                    true,
+                    object : SectionCallBack {
+                        override fun isSectionHeader(position: Int): Boolean {
+                            if ((position in 0 until bugAdapter.itemCount).not() || currentOrder == Util.GROUP_BY_NONE) return false
+                            if (position == 0)
+                                return true
+                            return getSectionHeaderName(position) != getSectionHeaderName(position - 1)
+                        }
 
-                override fun getSectionHeaderName(position: Int): String {
-                    return "${position/10}"
-                }
+                        override fun getSectionHeaderName(position: Int): String =
+                            if ((position in 0 until bugAdapter.itemCount).not()) "" else
+                                when (currentOrder) {
+                                    Util.GROUP_BY_ALPHABETICAL_ORDER -> "${
+                                        bugAdapter.currentList[position].bugName[0]
+                                            .toUpperCase()
+                                    }"
+                                    Util.GROUP_BY_PROJECT -> bugAdapter.currentList[position].projectName
 
-            }))
+                                    else -> ""
+                                }
+
+                    })
+            )
         }
 
 
-        dao.getBugDataSource().toLiveData(pageSize = 10 , initialLoadKey = 20,).observe(this, {
+        viewModel.bugs.asLiveData(context = Dispatchers.IO).observe(this, {
             bugAdapter.submitList(it)
         })
-
-
-
 
 
     }
@@ -69,7 +89,7 @@ class MainActivity : AppCompatActivity() {
     private fun checkStatus() {
         var size = 0
         val currentList = bugAdapter.currentList ?: return
-        while (size < currentList.size && currentList[size] != null){
+        while (size < currentList.size && currentList[size] != null) {
             size++
         }
         Toast.makeText(
@@ -80,24 +100,83 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun deleteBugs() {
-        lifecycleScope.launch(Dispatchers.IO){
-            dao.deleteAllBugs()
+        lifecycleScope.launch(Dispatchers.IO) {
+            viewModel.dao.deleteAllBugs()
         }
     }
 
     private fun addBugs() {
         val noOfBugs = binding.noOfBugsToInsert.text.toString()
         val bugs = mutableListOf<Bug>()
-        repeat(noOfBugs.valid()){
-            bugs.add(Bug(0,"BugName ${it+1}" , randomUser()))
+        repeat(noOfBugs.valid()) {
+            bugs.add(
+                Bug(
+                    0, randomBugName(),
+                    randomUser(),
+                    "Project ${(1..6).random()}",
+                    "Status ${(1..6).random()}"
+                )
+            )
         }
-        lifecycleScope.launch(Dispatchers.IO){
-            dao.insertBugs(bugs)
+        lifecycleScope.launch(Dispatchers.IO) {
+            viewModel.dao.insertBugs(bugs)
         }
     }
+
+
+    private fun showChangeGroupDialog() {
+        Toast.makeText(applicationContext, "the change grouop is called", Toast.LENGTH_SHORT).show()
+        val dialog = Dialog(this)
+        val dialogBinding = SortDialogBinding.inflate(layoutInflater)
+
+        dialogBinding.apply {
+            when (currentOrder) {
+                Util.GROUP_BY_ALPHABETICAL_ORDER -> groupByAlphabeticalOrder.isChecked = true
+                Util.GROUP_BY_PROJECT -> groupByProject.isChecked = true
+                else -> groupByNone.isChecked = true
+            }
+
+
+
+            apply.setOnClickListener {
+                currentOrder = sortGroup.checkedRadioButtonId
+                when (currentOrder) {
+                    Util.GROUP_BY_ALPHABETICAL_ORDER -> {
+                        Toast.makeText(applicationContext, "checked alpha", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    Util.GROUP_BY_PROJECT -> {
+                        Toast.makeText(applicationContext, "checked proj", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                    else -> {
+                        Toast.makeText(applicationContext, "checked none", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+
+                }
+
+                viewModel.changeGroupBy(currentOrder)
+                dialog.dismiss()
+
+            }
+
+            cancle.setOnClickListener {
+                dialog.dismiss()
+            }
+
+
+        }
+
+
+        dialog.setContentView(dialogBinding.root)
+        dialog.show()
+    }
+
+
 }
 
 private fun String.valid(): Int {
-    return if(this.isEmpty()) 0
+    return if (this.isEmpty()) 0
     else this.toInt()
 }

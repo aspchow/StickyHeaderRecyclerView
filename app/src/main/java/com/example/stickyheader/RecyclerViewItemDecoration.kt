@@ -51,11 +51,11 @@ class RecyclerViewItemDecoration(val context: Context, val headerOffSet: Int, va
         }
     }
 
-    private fun drawHeader(c: Canvas, child: View, headerView: View, isNextItemStickyHeader: Boolean= false, nextChild: View? = null) {
+    private fun drawHeader(c: Canvas, child: View, headerView: View, isNextItemStickyHeader: Boolean = false, nextChild: View? = null) {
         c.save()
         if (isSticky) {
-            if (isNextItemStickyHeader) {
-                c.translate(0F, Math.min(0, nextChild!!.top - 2 * headerView.height).toFloat())
+            if (isNextItemStickyHeader && nextChild!=null) {
+                c.translate(0F, Math.min(0, nextChild.top - 2 * headerView.height).toFloat())
             } else {
                 c.translate(0F, Math.max(0, child.top - headerView.height).toFloat())
             }

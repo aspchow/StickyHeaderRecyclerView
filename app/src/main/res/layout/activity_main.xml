@@ -37,19 +37,31 @@
 
     <Button
         android:id="@+id/deleteBugs"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:text="DELETE BUGS"
+        app:layout_constraintEnd_toStartOf="@+id/checkStatus"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/noOfBugsToInsert" />
 
     <Button
         android:id="@+id/checkStatus"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginLeft="10dp"
         android:text="CHECK STATUS"
         app:layout_constraintBaseline_toBaselineOf="@+id/deleteBugs"
+        app:layout_constraintEnd_toStartOf="@+id/changeGroupBy"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/deleteBugs" />
+
+    <Button
+        android:id="@+id/changeGroupBy"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:text="CHANGE GROUP BY"
+        app:layout_constraintBaseline_toBaselineOf="@+id/checkStatus"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/checkStatus" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -2,13 +2,12 @@ package com.example.stickyheader
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.annotation.NonNull
-import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.stickyheader.databinding.BugListViewBinding
 
-class BugPagedListAdapter : PagedListAdapter<Bug,BugViewHolder>(object :DiffUtil.ItemCallback<Bug>(){
+class BugListAdapter : ListAdapter<Bug, BugViewHolder>(object :DiffUtil.ItemCallback<Bug>(){
     override fun areItemsTheSame(oldItem: Bug, newItem: Bug): Boolean {
         return oldItem.bugId == newItem.bugId
     }
@@ -28,6 +27,7 @@ class BugPagedListAdapter : PagedListAdapter<Bug,BugViewHolder>(object :DiffUtil
            bugId.text =  bug.bugId.toString()
            bugName.text = bug.bugName
            bugsUser.text = bug.user
+           bugProjectName.text = bug.projectName
        }
     }
 }
