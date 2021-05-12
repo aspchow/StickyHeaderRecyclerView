@@ -1,17 +1,15 @@
 package com.example.stickyheader
 
-import android.content.Context
-import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import com.example.stickyheader.databinding.SectionHeaderBinding
 
 class RecyclerViewItemDecoration(
-    private val context: Context,
     private val isSticky: Boolean,
     private val sectionCallback: SectionCallBack
 ) : RecyclerView.ItemDecoration() {
@@ -27,15 +25,18 @@ class RecyclerViewItemDecoration(
         super.getItemOffsets(outRect, view, parent, state)
         val position = parent.getChildAdapterPosition(view)
         if (sectionCallback.isSectionHeader(position)) {
-            outRect.top = dpToPx(30).toInt()
+            if (::headerBinding.isInitialized.not()) {
+                headerBinding = inflateHeader(parent)
+                fixLayoutSize(headerBinding.root, parent)
+            }
+            outRect.top =
+                headerBinding.root.height
         }
     }
 
-    private fun dpToPx(dp: Int): Float {
-        return (dp * Resources.getSystem().displayMetrics.density)
-    }
 
-    override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
+
+    override fun onDrawOver(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         super.onDraw(c, parent, state)
         if (::headerBinding.isInitialized.not()) {
             headerBinding = inflateHeader(parent)
@@ -48,35 +49,59 @@ class RecyclerViewItemDecoration(
             val title = sectionCallback.getSectionHeaderName(childPos)
             headerBinding.headerText.text = title
             if (prevTitle != title || sectionCallback.isSectionHeader(childPos)) {
-                if (i == 0 && sectionCallback.isSectionHeader(childPos + 1)) {
-                    printMsg("The last position at error is $childPos")
-                    val nextChild = parent.getChildAt(i + 1)
-                    drawHeader(c, child, headerBinding.root, true, nextChild)
+                if (i == 0 ) {
+                    var nextChild: View? = null
+                    for (j in i until parent.childCount) {
+                        if (title != sectionCallback.getSectionHeaderName(childPos + j)) {
+                            nextChild = parent.getChildAt(j)
+                            break
+                        }
+                    }
+
+                    //nextChild = parent.getChildAt(i + 1)
+                    if(nextChild != null){
+                        drawHeader(c, child, true, nextChild)
+                    }
+                    else{
+                        drawHeader(c, child)
+                    }
+
                 } else
-                    drawHeader(c, child, headerBinding.root)
+                    drawHeader(c, child)
                 prevTitle = title
             }
         }
     }
 
+
     private fun drawHeader(
         c: Canvas,
         child: View,
-        headerView: View,
         isNextItemStickyHeader: Boolean = false,
         nextChild: View? = null
     ) {
         c.save()
         if (isSticky) {
             if (isNextItemStickyHeader) {
-                c.translate(0F, Math.min(0, nextChild!!.top - 2 * headerView.height).toFloat())
+                printMsg("the height of child top -> ${nextChild!!.top} , header Height ${headerBinding.root.height} child height is ${child.height}")
+                c.translate(
+                    0F,
+                    minOf(
+                        0F, nextChild.top - 2 * (headerBinding.root.height).toFloat()
+                    )
+
+                )
             } else {
-                c.translate(0F, Math.max(0, child.top - headerView.height).toFloat())
+                c.translate(
+                    0F,
+                    maxOf(0f, child.top - headerBinding.root.height.toFloat())
+                )
             }
         } else {
-            c.translate(0F, child.top - headerView.height.toFloat())
+            c.translate(0F, child.top - headerBinding.root.height.toFloat())
         }
-        headerView.draw(c)
+
+        headerBinding.root.draw(c)
         c.restore()
     }
 
@@ -102,11 +127,20 @@ class RecyclerViewItemDecoration(
     }
 
     private fun inflateHeader(recyclerView: RecyclerView): SectionHeaderBinding {
-        return SectionHeaderBinding.inflate(LayoutInflater.from(context), recyclerView, false)
+        return SectionHeaderBinding.inflate(
+            LayoutInflater.from(recyclerView.context),
+            recyclerView,
+            false
+        )
     }
 }
 
 interface SectionCallBack {
     fun isSectionHeader(position: Int): Boolean
     fun getSectionHeaderName(position: Int): String
+}
+
+// trying to experiment on this of different sticky headers
+interface SectionCallBack2<T : ViewBinding>{
+    fun getSectionHeaderName(position: Int , binding : T): T
 }

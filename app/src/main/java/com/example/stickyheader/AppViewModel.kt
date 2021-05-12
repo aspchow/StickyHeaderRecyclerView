@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.map
 
 class AppViewModel(context: Context) : ViewModel() {
 
-
+    var currentOrder = Util.GROUP_BY_PROJECT
     val dao = AppDatabase.getRoomDb(context).getBugDao()
-    private val sortOrder = MutableStateFlow(Util.GROUP_BY_PROJECT)
+    private val sortOrder = MutableStateFlow(currentOrder)
 
     private val mainBugsFlow = dao.getBugs()
     val bugs = mainBugsFlow.flatMapLatest { bugs ->

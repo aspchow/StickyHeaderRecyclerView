@@ -13,12 +13,12 @@ import com.example.stickyheader.databinding.SortDialogBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-fun printMsg(msg : String) = Log.d("AVINASH" , msg)
+fun printMsg(msg: String) = Log.d("AVINASH", msg)
 
 class MainActivity : AppCompatActivity() {
-    lateinit var binding: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
     lateinit var bugAdapter: BugListAdapter
-    var currentOrder = Util.GROUP_BY_PROJECT
+
 
     lateinit var viewModel: AppViewModel
 
@@ -54,11 +54,10 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(applicationContext)
             addItemDecoration(
                 RecyclerViewItemDecoration(
-                    applicationContext,
                     true,
                     object : SectionCallBack {
                         override fun isSectionHeader(position: Int): Boolean {
-                            if ((position in 0 until bugAdapter.itemCount).not() || currentOrder == Util.GROUP_BY_NONE) return false
+                            if ((position in 0 until bugAdapter.itemCount).not() || viewModel.currentOrder == Util.GROUP_BY_NONE) return false
                             if (position == 0)
                                 return true
                             return getSectionHeaderName(position) != getSectionHeaderName(position - 1)
@@ -66,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
                         override fun getSectionHeaderName(position: Int): String =
                             if ((position in 0 until bugAdapter.itemCount).not()) "" else
-                                when (currentOrder) {
+                                when (viewModel.currentOrder) {
                                     Util.GROUP_BY_ALPHABETICAL_ORDER -> "${
                                         bugAdapter.currentList[position].bugName[0]
                                             .toUpperCase()
@@ -90,14 +89,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkStatus() {
-        var size = 0
-        val currentList = bugAdapter.currentList ?: return
-        while (size < currentList.size && currentList[size] != null) {
-            size++
-        }
+        // var size = 0
+       // val currentList = bugAdapter.currentList
+        /*   while (size < currentList.size && currentList[size] != null) {
+               size++
+           }*/
         Toast.makeText(
             applicationContext,
-            "The Current size is $size",
+            "The Current size is ${bugAdapter.currentList.size}",
             Toast.LENGTH_SHORT
         ).show()
     }
@@ -133,7 +132,7 @@ class MainActivity : AppCompatActivity() {
         val dialogBinding = SortDialogBinding.inflate(layoutInflater)
 
         dialogBinding.apply {
-            when (currentOrder) {
+            when (viewModel.currentOrder) {
                 Util.GROUP_BY_ALPHABETICAL_ORDER -> groupByAlphabeticalOrder.isChecked = true
                 Util.GROUP_BY_PROJECT -> groupByProject.isChecked = true
                 else -> groupByNone.isChecked = true
@@ -142,8 +141,8 @@ class MainActivity : AppCompatActivity() {
 
 
             apply.setOnClickListener {
-                currentOrder = sortGroup.checkedRadioButtonId
-                when (currentOrder) {
+                viewModel.currentOrder = sortGroup.checkedRadioButtonId
+                when (viewModel.currentOrder) {
                     Util.GROUP_BY_ALPHABETICAL_ORDER -> {
                         Toast.makeText(applicationContext, "checked alpha", Toast.LENGTH_SHORT)
                             .show()
@@ -159,7 +158,7 @@ class MainActivity : AppCompatActivity() {
 
                 }
 
-                viewModel.changeGroupBy(currentOrder)
+                viewModel.changeGroupBy(viewModel.currentOrder)
                 dialog.dismiss()
 
             }
