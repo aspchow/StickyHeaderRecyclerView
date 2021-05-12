@@ -2,6 +2,7 @@ package com.example.stickyheader
 
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.asLiveData
@@ -11,6 +12,8 @@ import com.example.stickyheader.databinding.ActivityMainBinding
 import com.example.stickyheader.databinding.SortDialogBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
+fun printMsg(msg : String) = Log.d("AVINASH" , msg)
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
@@ -52,7 +55,6 @@ class MainActivity : AppCompatActivity() {
             addItemDecoration(
                 RecyclerViewItemDecoration(
                     applicationContext,
-                    100,
                     true,
                     object : SectionCallBack {
                         override fun isSectionHeader(position: Int): Boolean {
@@ -81,6 +83,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.bugs.asLiveData(context = Dispatchers.IO).observe(this, {
             bugAdapter.submitList(it)
+
         })
 
 

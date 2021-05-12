@@ -12,6 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="SELECT THE GROUP BY"
+        android:textColor="#000000"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -29,21 +30,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="Project Name" />
+            android:text="Project Name"
+            android:textColor="#000000" />
 
         <RadioButton
             android:id="@+id/groupByAlphabeticalOrder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="Alphabetical Order" />
+            android:text="Alphabetical Order"
+            android:textColor="#000000" />
 
         <RadioButton
             android:id="@+id/groupByNone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="None" />
+            android:text="None"
+            android:textColor="#000000" />
 
     </RadioGroup>
 
@@ -56,6 +60,8 @@
         android:layout_marginTop="16dp"
         android:text="Apply"
         android:textColor="#6F00FF00"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sortGroup" />
 
@@ -67,6 +73,8 @@
         android:layout_marginLeft="20dp"
         android:text="Cancle"
         android:textColor="#CB5151"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintBaseline_toBaselineOf="@+id/apply"
         app:layout_constraintEnd_toEndOf="@+id/sortGroup"
         app:layout_constraintStart_toEndOf="@+id/apply" />
